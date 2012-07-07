@@ -3,7 +3,11 @@ https://github.com/rstacruz/stencil.js
 ####
 
 class Listener
-  constructor: (@$el, @model, rules) ->
+  constructor: (@$el, model, rules) ->
+    unless rules?
+      rules = model; model = null
+
+    @model = model
     @events = @_flattenRules rules
     @memoize @, 'getSingleRunner'
 
@@ -165,6 +169,6 @@ class Listener
     directives
 
 # jQuery/Zepto
-$.fn.stencil = (args...) ->
-  new Listener this, args...
+$.fn.stencil = (model, bindings) ->
+  new Listener this, model, bindings
 

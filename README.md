@@ -78,13 +78,8 @@ person.set last_name: "Boe"
 ## Non-Backbone usage
 
 ``` coffee
-# The context is (1) where events will be bound to, and (2) the `this` in the
-# functions that you'll define in your bindings. We won't need that without
-# Backbone, so let's set it to null.
-context = null
-
 # Let's build a simple stencil...
-stencil = $("#foo").stencil context,
+stencil = $("#foo").stencil
   'edit':
     'html h2 .first':     (p) -> p.first_name
     'html .avatar@title': (p) -> p.first_name
@@ -111,8 +106,15 @@ bindings =
   'change:content':
     'html .content': -> @get('content')
 
+# Backbone:
 stencil = $(@el).stencil @model, bindings
+
+# Not Backbone:
+stencil = $(@el).stencil bindings
 ```
+
+The `model` parameter is (1) where events will be bound to, and (2) the `this`
+in the functions that you'll define in your bindings. It is optional.
 
 This makes it so that everytime the `change:name` happens on the model, the h2
 text and a.permalink's href attribute is updated with `model.get('name')` and

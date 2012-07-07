@@ -11,6 +11,10 @@ https://github.com/rstacruz/stencil.js
 
     function Listener($el, model, rules) {
       this.$el = $el;
+      if (rules == null) {
+        rules = model;
+        model = null;
+      }
       this.model = model;
       this.events = this._flattenRules(rules);
       this.memoize(this, 'getSingleRunner');
@@ -259,14 +263,8 @@ https://github.com/rstacruz/stencil.js
 
   })();
 
-  $.fn.stencil = function() {
-    var args;
-    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    return (function(func, args, ctor) {
-      ctor.prototype = func.prototype;
-      var child = new ctor, result = func.apply(child, args), t = typeof result;
-      return t == "object" || t == "function" ? result || child : child;
-    })(Listener, [this].concat(__slice.call(args)), function(){});
+  $.fn.stencil = function(model, bindings) {
+    return new Listener(this, model, bindings);
   };
 
 }).call(this);

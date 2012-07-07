@@ -195,7 +195,7 @@ describe 'Collections', ->
             'html span': (person) -> person.name
 
     it 'add a single person', ->
-      stencil = @$el.stencil null, @bindings
+      stencil = @$el.stencil @bindings
       stencil.run 'add', (name: "Rose")
 
       expect(@$el).toContainHtml '<span>Rose</span>'
