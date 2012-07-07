@@ -1,8 +1,7 @@
 # Stencil.js (experimental!)
 
-Fast JS binding engine (slash template engine).
-
-Perfect with [Backbone.js][b]!
+Fast JS binding engine (slash template engine). Perfect with or without 
+[Backbone.js][b]!
 
 ## How to use
 
@@ -162,6 +161,24 @@ Self attributes are cool too (it works on the top level element):
 'attr @data-id': -> @id          # <div id='id-here'>
 ```
 
+To work with arrays/collections, use the `add` action to add items. Great for
+binding to `add` and `reset` events. More about this on
+[Working with arrays and collections](#working-with-arrays-and-collections).
+
+``` coffee
+'add ul > li':
+  'attr @data-id':   (person) -> person.cid
+  'text h3':         (person) -> person.get('name')
+  'text address':    (person) -> person.get('address')
+```
+
+There's also the `remove` action. See
+[Working with arrays and collections](#working-with-arrays-and-collections).
+
+``` coffee
+'remove ul > li @data-id': (person) -> person.cid
+```
+
 ## Multiple events
 
 You can comma-separate the events.
@@ -185,7 +202,7 @@ class AddressBook extends Backbone.View
     # We'll make a binding to a Backbone collection's `add` and `reset` events.
     'add, reset':
 
-      # The # To add, make a directive with a matcher `add PARENT > CHILD`.
+      # To add, make a directive with a matcher `add PARENT > CHILD`.
       # Whenever the above events (add/reset) are triggered, this directive will
       # add a `li` to the `ul`, and executes the sub-directives to populate the
       # `li`.
