@@ -1,4 +1,6 @@
-###! Stencil.js templating ###
+###! Stencil.js templating/binding engine
+https://github.com/rstacruz/stencil.js
+####
 
 class Listener
   constructor: (@$el, @model, rules) ->
