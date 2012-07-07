@@ -106,6 +106,7 @@ describe 'Collections', ->
   persons = [
     new Person name: "Criss", email: 'criss@me.com'
     new Person name: "Sidney", email: 'sid@me.com'
+    new Person name: "Rain", email: 'rain@me.com'
   ]
 
   beforeEach ->
@@ -118,6 +119,9 @@ describe 'Collections', ->
   describe 'groups', ->
     beforeEach ->
       @stencil = @view.$el.stencil @people,
+        'reset':
+          'html ul': -> ''
+
         'add, reset':
           'add ul > li':
             'attr @data-id': (person) -> person.cid
@@ -151,6 +155,18 @@ describe 'Collections', ->
 
       expect(@people.models.length).toBe 2
       expect(@view.$el.find('li').length).toBe 2
+
+    it 'should work with second empty reset', ->
+      @people.reset([persons[1], persons[0]])
+
+      @people.reset([])
+      expect(@view.$el.find('li').length).toBe 0
+
+    it 'should work with second non-empty reset', ->
+      @people.reset([persons[1], persons[0]])
+
+      @people.reset([persons[2]])
+      expect(@view.$el.find('li').length).toBe 1
 
     it 'should work with remove', ->
       @people.reset([persons[1], persons[0]])
