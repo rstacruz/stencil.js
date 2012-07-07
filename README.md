@@ -1,4 +1,4 @@
-# Stencil
+# Stencil.js (experimental!)
 
 Fast JS binding engine (slash template engine).
 
@@ -111,7 +111,7 @@ that's what matches the thing to be deleted.
 
 ``` coffee
 class AddressBook extends Backbone.View
-  stencils:
+  bindings:
     'add':
       'add ul > li':
         'attr @data-id': (person) -> person.id
@@ -121,7 +121,7 @@ class AddressBook extends Backbone.View
       'remove ul li@data-id': (person) -> person.id
 
   initialize: (@collection) ->
-    @stencil = @$el.stencil(@collection, @stencils)
+    @stencil = @$el.stencil(@collection, @bindings)
 ```
 
 ## Attributes
