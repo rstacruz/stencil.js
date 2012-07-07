@@ -1,3 +1,22 @@
+# Stencil
+
+Fast JS binding engine (slash template engine).
+
+Perfect with Backbone!
+
+## How to use
+
+You'll need [underscore.js][u] and [jQuery][j] or Zepto.
+
+``` html
+<script src='underscore.js'></script>
+<script src='jquery.js'></script>
+<script src='stencil.js'></script>  <!-- yay! -->
+```
+
+[u]: http://underscorejs.org
+[uj: http://jquery.com
+
 ## Getting started
 
 To start, create a stencil object that links your model events to
@@ -33,10 +52,16 @@ stencil.run('change:*')
 
 ## Directives
 
-Directives are usually selectors:
+You can have a directive to edit HTML from an element:
 
 ``` coffee
 'html h2': -> @get('name')       # <h2>Hello</h2>
+```
+
+or text:
+
+``` coffee
+'text h2': -> @get('name')       # <h2>Hello</h2>
 ```
 
 Attributes are okay:
@@ -79,16 +104,21 @@ class PersonView extends Backbone.View
 
 ## Collections
 
+To add, make a directive with a matcher `add PARENT > CHILD`.
+
+To remove, you'll need `remove SELECTOR @ATTR`. Yes, you'll need attr, because
+that's what matches the thing to be deleted.
+
 ``` coffee
 class AddressBook extends Backbone.View
   stencils:
     'add':
-      'ul -> li':
+      'add ul > li':
         'attr @data-id': (person) -> person.id
         'text h3':       (person) -> person.get('name')
         'text .add':     (person) -> person.get('address')
     'remove':
-      'ul li@data-id': (person) -> person.id
+      'remove ul li@data-id': (person) -> person.id
 
   initialize: (@collection) ->
     @stencil = @$el.stencil(@collection, @stencils)
