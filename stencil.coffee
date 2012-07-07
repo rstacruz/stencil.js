@@ -76,26 +76,25 @@ class Listener
     selector = m[2]
 
     switch action
-      # List remove?
-      when 'remove'
-        m = selector.match(/^(.*?)\s*<-\s*(.*?)\s*@\s*([A-Za-z0-9\-\_]+)$/)
-        throw "Matcher error: '#{matcher}'" unless m
-        @runners.remove.apply this, [selector, handler, $el, m[1], m[2], m[3]]
-
       # List add?
       when 'add'
         m = selector.match(/^(.*?)\s*>\s*([^>]+?)$/)
-        throw "Matcher error: '#{matcher}'" unless m
+        throw "#{action} matcher error: '#{selector}'" unless m
         @runners.add.apply this, [selector, handler, $el, m[1], m[2]]
 
       # Attribute?
       when 'attr'
         m = selector.match(/^(.*?)\s*@([A-Za-z0-9\-\_]+)$/)
-        throw "Matcher error: '#{matcher}'" unless m
+        throw "#{action} matcher error: '#{selector}'" unless m
         @runners.attr.apply this, [selector, handler, $el, m[1], m[2]]
 
       when 'html', 'text'
         @runners.default.apply this, [selector, handler, $el]
+
+      when 'remove'
+        m = selector.match(/^(.*?)\s*>\s*([^>]+?)\s*@([A-Za-z0-9\-\_]+)\s*$/)
+        throw "#{action} matcher error: '#{selector}'" unless m
+        @runners.remove.apply this, [selector, handler, $el, m[1], m[2], m[3]]
 
       else
         throw "Unknown action: '#{action}'"
@@ -137,6 +136,7 @@ class Listener
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
       fn = _.bind(handler, @model)
+
       (args) =>
         val = fn(args...)
         $_el.find(m2).filter("[#{attribute}=\"#{val}\"]").remove()

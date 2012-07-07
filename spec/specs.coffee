@@ -123,6 +123,10 @@ describe 'Collections', ->
             'attr @data-id': (person) -> person.cid
             'text h2':       (person) -> person.get 'name'
 
+        'remove':
+          'remove ul > li @data-id':
+            (person) -> person.cid
+
     it 'should add', ->
       @people.add persons[0]
 
@@ -142,9 +146,18 @@ describe 'Collections', ->
       expect(@people.models.length).toBe 2
       expect(@view.$el.find('li').length).toBe 2
 
-    it 'should work with reset', ->
+    it 'should work with first reset', ->
       @people.reset([persons[1], persons[0]])
 
       expect(@people.models.length).toBe 2
-      alert @view.$el.html()
-      # expect(@view.$el.find('li').length).toBe 2
+      expect(@view.$el.find('li').length).toBe 2
+
+    it 'should work with remove', ->
+      @people.reset([persons[1], persons[0]])
+
+      expect(@view.$el.find('li').length).toBe 2
+      @people.remove persons[1]
+
+      expect(@view.$el.find('li').length).toBe 1
+      expect(@view.$el).not.toContainHtml persons[1].get('name')
+      expect(@view.$el).toContainHtml persons[0].get('name')
