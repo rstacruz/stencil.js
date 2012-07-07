@@ -1,6 +1,4 @@
-###!
- * Stencil.js templating
-###
+###! Stencil.js templating ###
 
 class Listener
   constructor: (@$el, @model, rules) ->
