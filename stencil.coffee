@@ -62,22 +62,38 @@ class Listener
     _.each directives, (action, selector) =>
       @getRunner(selector, action, $el)(args)
 
-  # Returns a runner for a given directive (ie, selector/action pair).
-  getRunner: (selector, action, $el) ->
+  # Returns a runner for a given directive (ie, matcher/handler pair).
+  getRunner: (matcher, handler, $el) ->
+    m = matcher.match(/^\s*([^\s]+)\s*(.*?)\s*$/)
+    throw "Matcher error: '#{matcher}'" unless m
+
+    action = m[1]
+    selector = m[2]
+
+    switch action
     # List remove?
-    if m = selector.match(/^\s*(.*?)\s*<-\s*(.*?)\s*@\s*([A-Za-z0-9\-\_]+)\s*$/)
-      @runners.listRemove.apply this, [selector, action, $el, m[1], m[2], m[3]]
+      when 'remove'
+        m = selector.match(/^(.*?)\s*<-\s*(.*?)\s*@\s*([A-Za-z0-9\-\_]+)$/)
+        throw "Matcher error: '#{matcher}'" unless m
+        @runners.remove.apply this, [selector, handler, $el, m[1], m[2], m[3]]
 
-    # List add?
-    else if m = selector.match(/^\s*(.*?)\s*->\s*(.*?)\s*$/)
-      @runners.listAdd.apply this, [selector, action, $el, m[1], m[2]]
+      # List add?
+      when 'add'
+        m = selector.match(/^(.*?)\s*>\s*([^>]+?)$/)
+        throw "Matcher error: '#{matcher}'" unless m
+        @runners.add.apply this, [selector, handler, $el, m[1], m[2]]
 
-    # Attribute?
-    else if m = selector.match(/^\s*(.*?)\s*@\s*([A-Za-z0-9\-\_]+)\s*$/)
-      @runners.attribute.apply this, [selector, action, $el, m[1], m[2]]
+      # Attribute?
+      when 'attr'
+        m = selector.match(/^(.*?)\s*@([A-Za-z0-9\-\_]+)$/)
+        throw "Matcher error: '#{matcher}'" unless m
+        @runners.attr.apply this, [selector, handler, $el, m[1], m[2]]
 
-    else
-      @runners.default.apply this, [selector, action, $el]
+      when 'html', 'text'
+        @runners.default.apply this, [selector, handler, $el]
+
+      else
+        throw "Unknown action: '#{action}'"
 
   runners:
     default: (selector, action, $el) ->
@@ -85,14 +101,14 @@ class Listener
       (args) =>
         $el.find(selector).html fn(args...)
 
-    attribute: (selector, action, $el, m1, m2) ->
+    attr: (selector, action, $el, m1, m2) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
       fn = _.bind(action, @model)
       (args) =>
         $_el.attr m2, fn(args...)
 
-    listAdd: (selector, action, $el, m1, m2) ->
+    add: (selector, action, $el, m1, m2) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
       $tpl = $($_el.find(m2)[0]).remove()
@@ -103,7 +119,7 @@ class Listener
         @runDirectives action, args, $new
         $_el.append $new
 
-    listRemove: (selector, action, $el, m1, m2, attribute) ->
+    remove: (selector, action, $el, m1, m2, attribute) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
       fn = _.bind(action, @model)

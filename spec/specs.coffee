@@ -33,13 +33,13 @@ describe 'Stencil', ->
 
       @stencil = @view.$el.stencil @person,
         '_start':
-          '@data-id': -> @cid
+          'attr @data-id': -> @cid
         'change:name':
-          'h2': -> @get 'name'
+          'text h2': -> @get 'name'
         'change:email':
-          '.email': -> @get 'email'
+          'text .email': -> @get 'email'
         'change:title':
-          'h2@title': -> @get 'title'
+          'attr h2@title': -> @get 'title'
 
     it 'should not run at first', ->
       expect(@view.$el).not.toContainHtml '<h2>Jason</h2>'
@@ -119,9 +119,9 @@ describe 'Collections', ->
     beforeEach ->
       @stencil = @view.$el.stencil @people,
         'add':
-          '-> li':
-            '@data-id': (person) -> person.cid
-            'h2':       (person) -> person.get 'name'
+          'add > li':
+            'attr @data-id': (person) -> person.cid
+            'text h2':       (person) -> person.get 'name'
 
     it 'should add', ->
       @people.add persons[0]
