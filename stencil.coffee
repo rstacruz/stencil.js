@@ -5,17 +5,17 @@
 class Listener
   constructor: (@$el, @model, rules) ->
     @events = @_flattenRules rules
-
-    @memoize @runners, 'listAdd'
-    @memoize @runners, 'listRemove'
-    # @memoize @runners, 'attribute'
-    # @memoize @runners, 'default'
-    # @memoize @, 'getRunner'
+    @memoize @, 'getSingleRunner'
 
     @bind()
 
   memoize: (obj, attr) ->
-    all = (args...) -> all
+    all = (a,b,$el) ->
+      # Hash the element
+      $el.data('uniq') ? $el.data('uniq', Math.random())
+      uniq = $el.data('uniq')
+      [a,b,uniq]
+
     fn = obj[attr]
     obj[attr] = _.memoize fn, all
 
@@ -59,11 +59,18 @@ class Listener
   # Given a hash of directives, run them against element {$el}. Pass the
   # arguments {args} to the handlers.
   runDirectives: (directives, args, $el=@$el) ->
-    _.each directives, (action, selector) =>
-      @getRunner(selector, action, $el)(args)
+    fn = @getRunner(directives, $el)
+    fn(args)
+
+  getRunner: (directives, $el=@$el) ->
+    runners = _.map directives, (handler, matcher) =>
+      @getSingleRunner(matcher, handler, $el)
+
+    (args) ->
+      _.each runners, (runner) -> runner(args)
 
   # Returns a runner for a given directive (ie, matcher/handler pair).
-  getRunner: (matcher, handler, $el) ->
+  getSingleRunner: (matcher, handler, $el) ->
     m = matcher.match(/^\s*([^\s]+)\s*(.*?)\s*$/)
     throw "Matcher error: '#{matcher}'" unless m
 
@@ -71,7 +78,7 @@ class Listener
     selector = m[2]
 
     switch action
-    # List remove?
+      # List remove?
       when 'remove'
         m = selector.match(/^(.*?)\s*<-\s*(.*?)\s*@\s*([A-Za-z0-9\-\_]+)$/)
         throw "Matcher error: '#{matcher}'" unless m
@@ -96,33 +103,34 @@ class Listener
         throw "Unknown action: '#{action}'"
 
   runners:
-    default: (selector, action, $el) ->
-      fn = _.bind(action, @model)
+    default: (selector, handler, $el) ->
+      fn = _.bind(handler, @model)
       (args) =>
         $el.find(selector).html fn(args...)
 
-    attr: (selector, action, $el, m1, m2) ->
+    attr: (selector, handler, $el, m1, m2) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
-      fn = _.bind(action, @model)
+      fn = _.bind(handler, @model)
       (args) =>
         $_el.attr m2, fn(args...)
 
-    add: (selector, action, $el, m1, m2) ->
+    add: (selector, handler, $el, m1, m2) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
+      console.log 'removing', selector, handler, $el.html()
       $tpl = $($_el.find(m2)[0]).remove()
 
       (args) =>
         $new = $tpl.clone()
-        $new.attr 'data-random', Math.random() # Workaround!
-        @runDirectives action, args, $new
+        runner = @getRunner handler, $new
+        runner(args)
         $_el.append $new
 
-    remove: (selector, action, $el, m1, m2, attribute) ->
+    remove: (selector, handler, $el, m1, m2, attribute) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
-      fn = _.bind(action, @model)
+      fn = _.bind(handler, @model)
       (args) =>
         val = fn(args...)
         $_el.find(m2).filter("[#{attribute}=\"#{val}\"]").remove()

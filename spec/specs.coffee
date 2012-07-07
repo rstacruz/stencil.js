@@ -119,16 +119,32 @@ describe 'Collections', ->
     beforeEach ->
       @stencil = @view.$el.stencil @people,
         'add':
-          'add > li':
+          'add ul > li':
             'attr @data-id': (person) -> person.cid
             'text h2':       (person) -> person.get 'name'
 
     it 'should add', ->
       @people.add persons[0]
+
       expect(@view.$el.find('li').length).toBe 1
       expect(@view.$el.find('li h2')).toHaveText persons[0].get('name')
 
-    it 'should add multiple', ->
-      @people.add persons[0]
+    it 'should add again', ->
       @people.add persons[1]
+
+      expect(@view.$el.find('li').length).toBe 1
+      expect(@view.$el.find('li h2')).toHaveText persons[1].get('name')
+
+    it 'should add multiple', ->
+      @people.add persons[1]
+      @people.add persons[0]
+
+      expect(@people.models.length).toBe 2
       expect(@view.$el.find('li').length).toBe 2
+
+    xit 'should work with reset', ->
+      @people.reset([persons[1], persons[0]])
+
+      expect(@people.models.length).toBe 2
+      alert @view.$el.html()
+      # expect(@view.$el.find('li').length).toBe 2
