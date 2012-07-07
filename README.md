@@ -68,18 +68,19 @@ person = new Person first_name: "Jack", last_name: "Harkness"
 # Just making the view will populate the element (by running 'change:*').
 view = new PersonView model: person, el: $(".person")
 
-# Now change something in the model...
+# Now change something in the model. Backbone will trigger the
+# 'change:last_name' event...
 person.set last_name: "Boe"
 
-# And the view will respond. Hooray!
+# ...which the stencil will catch, and the view will respond. Hooray!
 ```
 
 ## Non-Backbone usage
 
 ``` coffee
 # The context is (1) where events will be bound to, and (2) the `this` in the
-functions that you'll define in your bindings. We won't need that without
-Backbone, so let's set it to null.
+# functions that you'll define in your bindings. We won't need that without
+# Backbone, so let's set it to null.
 context = null
 
 # Let's build a simple stencil...
