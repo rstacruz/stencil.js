@@ -54,6 +54,7 @@ class Listener
     events = [events]  unless _.isArray(events)
 
     @runDirectives @getDirectivesFor(events), args
+    this
 
   # Given a hash of directives, run them against element {$el}. Pass the
   # arguments {args} to the handlers.
