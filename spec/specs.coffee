@@ -24,6 +24,7 @@ describe 'Stencil', ->
     @view = new PersonView
 
   afterEach ->
+    @stencil.unbind()
     @view.remove()
 
   describe 'Bindngs', ->
@@ -69,6 +70,19 @@ describe 'Stencil', ->
       @stencil.run '_start'
       expect(@view.$el).toHaveAttr 'data-id', @person.cid
 
+    it 'should unbind with unbind()', ->
+      @person.set name: 'Aubrey'
+      expect(@view.$el).toContainHtml '<h2>Aubrey</h2>'
+
+      @stencil.unbind()
+
+      @person.set name: 'Malcolm'
+      expect(@view.$el).not.toContainHtml '<h2>Malcolm</h2>'
+
+      @stencil.bind()
+
+      @person.set name: 'Harold'
+      expect(@view.$el).toContainHtml '<h2>Harold</h2>'
 
 describe 'Collections', ->
   PeopleView = Backbone.View.extend
@@ -99,10 +113,11 @@ describe 'Collections', ->
     @people = new People
 
   afterEach ->
+    @view.remove()
 
   describe 'groups', ->
     beforeEach ->
-      @stencil = $(@view.$el).stencil @people,
+      @stencil = @view.$el.stencil @people,
         'add':
           '-> li':
             '@data-id': (person) -> person.cid
