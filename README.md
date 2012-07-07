@@ -54,7 +54,7 @@ with content:
 stencil.run('change:*')
 ```
 
-## Directives
+## Binding directives
 
 You can have a directive to edit HTML from an element:
 
@@ -129,7 +129,7 @@ class PersonView extends Backbone.View
 
 ```
 
-## Collections
+## Working with arrays and collections
 
 To add, make a directive with a matcher `add PARENT > CHILD`.
 
@@ -139,16 +139,38 @@ that's what matches the thing to be deleted.
 ``` coffee
 class AddressBook extends Backbone.View
   bindings:
-    'add':
+    # We'll make a binding to a Backbone collection's `add` and `reset` events.
+    'add, reset':
+
+      # The # To add, make a directive with a matcher `add PARENT > CHILD`.
+      # Whenever the above events (add/reset) are triggered, this directive will
+      # add a `li` to the `ul`, and executes the sub-directives to populate the
+      # `li`.
+      #
+      # If the event is triggered with an object that's an array or a list (such
+      # as a Backbone collection, in the case of 'reset'), it will be iterated
+      # though and one element will be added for each item.
+      #
+      # If it's called with a non-array/list (such as a Model, in the case of
+      # the 'add' event), one element will be added.
       'add ul > li':
-        'attr @data-id': (person) -> person.id
-        'text h3':       (person) -> person.get('name')
-        'text .add':     (person) -> person.get('address')
+          'attr @data-id': (person) -> person.cid
+          'text h3':       (person) -> person.get('name')
+          'text .add':     (person) -> person.get('address')
+
+    # To remove, you'll need `remove SELECTOR @ATTR`. Yes, you'll need attr,
+    # because that's what matches the thing to be deleted.
+    # This will delete any `ul li` that has a 'data-id' attribute that matches
+    # the person's cid.
     'remove':
-      'remove ul li@data-id': (person) -> person.id
+      'remove ul li@data-id': (person) -> person.cid
 
   initialize: (@collection) ->
+    @$el.html @template
     @stencil = @$el.stencil(@collection, @bindings)
+
+    # Let's simulate a reset to populate it.
+    @stencil.run 'reset', @collection
 ```
 
 ## Attributes
