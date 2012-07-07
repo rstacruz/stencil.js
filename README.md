@@ -2,7 +2,7 @@
 
 Fast JS binding engine (slash template engine).
 
-Perfect with Backbone!
+Perfect with [Backbone.js][b]!
 
 ## How to use
 
@@ -16,6 +16,85 @@ You'll need [underscore.js][u] and [jQuery][j] or Zepto.
 
 [u]: http://underscorejs.org
 [j]: http://jquery.com
+[b]: http://backbonejs.org
+
+## Backbone usage example
+
+Stencil does not require Backbone. However, it's best used to bind events to
+Backbone models/collections to make HTML respond to it.
+
+``` coffee
+class PersonView extends Backbone.View
+  # Let's define a simple HTML template.
+  template:
+    '''
+    <div class='person'>
+      <h2>
+        <span class='first'></span>
+        <span class='last'></span>
+      </h2>
+    </div>
+    '''
+
+  # These are the bindings that will be bound to a model (change:first_name,
+  # change:last_name), along with directives on how to respond to those events.
+  bindings:
+    'change:first_name':
+      'html h2 .first':     -> @get('first_name')
+      'html .avatar@title': -> @get('first_name')
+
+    'change:last_name':
+      'html h2 .last': -> @get('first_name')
+
+  initialize: (@model) ->
+    # Let's render the element! First, let's bring in the static HTML template:
+    @$el.html template
+
+    # Then let's make a stencil that binds your bindings to your model:
+    @stencil = @$el.stencil(@model, @bindings)
+
+    # Now let's trigger all the `change` bindings, which will effectively
+    # populate the element:
+    @stencil.run 'change:*'
+
+    # We're done. Yay!
+```
+
+Let's try it:
+
+``` coffee
+person = new Person first_name: "Jack", last_name: "Harkness"
+
+# Just making the view will populate the element (by running 'change:*').
+view = new PersonView model: person, el: $(".person")
+
+# Now change something in the model...
+person.set last_name: "Boe"
+
+# And the view will respond. Hooray!
+```
+
+## Non-Backbone usage
+
+``` coffee
+# The context is (1) where events will be bound to, and (2) the `this` in the
+functions that you'll define in your bindings. We won't need that without
+Backbone, so let's set it to null.
+context = null
+
+# Let's build a simple stencil...
+stencil = $("#foo").stencil context,
+  'edit':
+    'html h2 .first':     (p) -> p.first_name
+    'html .avatar@title': (p) -> p.first_name
+    'html h2 .last':      (p) -> p.last_name
+
+# Then let's say your data looks like:
+person = (first_name: "Rose", last_name: "Tyler")
+
+# Now you can run it!
+stencil.run 'edit', person
+```
 
 ## Getting started
 
@@ -88,45 +167,6 @@ You can comma-separate the events.
 stencil = $(@el).stencil @model,
   'change:first_name, change:last_name':
     'html h2': -> @get('last_name') + ", " + @get('first_name')
-```
-
-## Backbone usage example
-
-Stencil does not require Backbone, but it's best used for Backbone models.
-
-``` coffee
-class PersonView extends Backbone.View
-  # Let's define a simple HTML template.
-  template:
-    '''
-    <div class='person'>
-      <h2>
-        <span class='first'></span>
-        <span class='last'></span>
-      </h2>
-    </div>
-    '''
-
-  bindings:
-    'change:first_name':
-      'html h2 .first': -> @get('first_name')
-    'change:last_name':
-      'html h2 .last': -> @get('first_name')
-
-  initialize: (@model) ->
-    # Let's render the element! First, let's bring in the static HTML template:
-    @$el.html template
-
-    # Then let's make a stencil that binds your bindings to your model:
-    @stencil = @$el.stencil(@model, @bindings)
-
-    # Now let's trigger all the `change` bindings, which will effectively
-    # populate the element:
-    @stencil.run 'change:*'
-
-    # We're done. Yay!
-    this
-
 ```
 
 ## Working with arrays and collections
