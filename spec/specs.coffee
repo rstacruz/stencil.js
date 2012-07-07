@@ -118,7 +118,7 @@ describe 'Collections', ->
   describe 'groups', ->
     beforeEach ->
       @stencil = @view.$el.stencil @people,
-        'add':
+        'add, reset':
           'add ul > li':
             'attr @data-id': (person) -> person.cid
             'text h2':       (person) -> person.get 'name'
@@ -142,7 +142,7 @@ describe 'Collections', ->
       expect(@people.models.length).toBe 2
       expect(@view.$el.find('li').length).toBe 2
 
-    xit 'should work with reset', ->
+    it 'should work with reset', ->
       @people.reset([persons[1], persons[0]])
 
       expect(@people.models.length).toBe 2

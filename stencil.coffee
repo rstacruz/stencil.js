@@ -116,14 +116,22 @@ class Listener
     add: (selector, handler, $el, m1, m2) ->
       $_el = $el
       $_el = $_el.find(m1)  if m1.length
-      console.log 'removing', selector, handler, $el.html()
       $tpl = $($_el.find(m2)[0]).remove()
 
       (args) =>
-        $new = $tpl.clone()
-        runner = @getRunner handler, $new
-        runner(args)
-        $_el.append $new
+        work = (_args) =>
+          $new = $tpl.clone()
+          runner = @getRunner handler, $new
+          runner(_args)
+          $_el.append $new
+
+        # Collection reset
+        if typeof args[0].length is 'number'
+          args[0].each (model) =>
+            work [model]
+        # Single
+        else
+          work args
 
     remove: (selector, handler, $el, m1, m2, attribute) ->
       $_el = $el
