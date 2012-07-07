@@ -15,7 +15,7 @@ You'll need [underscore.js][u] and [jQuery][j] or Zepto.
 ```
 
 [u]: http://underscorejs.org
-[uj: http://jquery.com
+[j]: http://jquery.com
 
 ## Getting started
 
@@ -23,18 +23,23 @@ To start, create a stencil object that links your model events to
 directives.
 
 ``` coffee
-stencil = $(@el).stencil @model,
+bindings =
   'change:name':
     'html h2': -> @get('name')
     'attr a.permalink@href': -> @url()
 
   'change:content':
     'html .content': -> @get('content')
+
+stencil = $(@el).stencil @model, bindings
 ```
 
 This makes it so that everytime the `change:name` happens on the model, the h2
 text and a.permalink's href attribute is updated with `model.get('name')` and
 `model.url()` respectively.
+
+Stencil automatically binds to the given model as long as it responds to `.on`
+or `.off`. Great for Backbone models or collections!
 
 ``` coffee
 # Assuming this throws a 'change:name' event, h2 and a.permalink will
@@ -46,7 +51,6 @@ You can run all directives at once. This is great for initializing the element
 with content:
 
 ``` coffee
-stencil.run('*')
 stencil.run('change:*')
 ```
 
@@ -92,14 +96,37 @@ Stencil does not require Backbone, but it's best used for Backbone models.
 
 ``` coffee
 class PersonView extends Backbone.View
-  stencils:
+  # Let's define a simple HTML template.
+  template:
+    '''
+    <div class='person'>
+      <h2>
+        <span class='first'></span>
+        <span class='last'></span>
+      </h2>
+    </div>
+    '''
+
+  bindings:
     'change:first_name':
       'html h2 .first': -> @get('first_name')
     'change:last_name':
       'html h2 .last': -> @get('first_name')
 
   initialize: (@model) ->
-    @stencil = @$el.stencil(@model, @stencils)
+    # Let's render the element! First, let's bring in the static HTML template:
+    @$el.html template
+
+    # Then let's make a stencil that binds your bindings to your model:
+    @stencil = @$el.stencil(@model, @bindings)
+
+    # Now let's trigger all the `change` bindings, which will effectively
+    # populate the element:
+    @stencil.run 'change:*'
+
+    # We're done. Yay!
+    this
+
 ```
 
 ## Collections
