@@ -177,3 +177,32 @@ describe 'Collections', ->
       expect(@view.$el.find('li').length).toBe 1
       expect(@view.$el).not.toContainHtml persons[1].get('name')
       expect(@view.$el).toContainHtml persons[0].get('name')
+
+  describe 'Non-Backbone models', ->
+    template = '''
+      <ul id='people'>
+        <li>
+          <span></span>
+        </li>
+      </ul>
+      '''
+
+    beforeEach ->
+      @$el = $(template)
+      @bindings =
+        add:
+          'add  > li':
+            'html span': (person) -> person.name
+
+    it 'add a single person', ->
+      stencil = @$el.stencil null, @bindings
+      stencil.run 'add', (name: "Rose")
+
+      expect(@$el).toContainHtml '<span>Rose</span>'
+
+    it 'add multiple', ->
+      people = [ (name: "Jackie"), (name: "Tyler") ]
+      stencil = @$el.stencil people, @bindings
+      stencil.run 'add', people
+
+      expect(@$el).toContainHtml '<span>Jackie</span>'

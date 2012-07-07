@@ -18,17 +18,21 @@ class Listener
     obj[attr] = _.memoize fn, all
 
   bind: ->
+    return unless @model?.on
+
     @unbind()
 
     # Save the handlers so we can unbind them later if need be.
     @handlers = {}
     _.each @events, (directives, event) =>
-      @handlers[event] = (args...) => @run event, args
+      @handlers[event] = (args...) => @run event, args...
       @model.on event, @handlers[event]
 
     this
 
   unbind: ->
+    return unless @model?.off
+
     if @handlers
       _.each @handlers, (fn, event) => @model.off event, fn
       @handlers = null
@@ -47,7 +51,7 @@ class Listener
 
     re
 
-  run: (events='*', args) ->
+  run: (events='*', args...) ->
     return @runGlob(events)  if events.indexOf('*') > -1
     events = [events]  unless _.isArray(events)
 
@@ -89,7 +93,7 @@ class Listener
         @runners.attr.apply this, [selector, handler, $el, m[1], m[2]]
 
       when 'html', 'text'
-        @runners.default.apply this, [selector, handler, $el]
+        @runners.default.apply this, [selector, handler, $el, action]
 
       when 'remove'
         m = selector.match(/^(.*?)\s*>\s*([^>]+?)\s*@([A-Za-z0-9\-\_]+)\s*$/)
@@ -100,10 +104,14 @@ class Listener
         throw "Unknown action: '#{action}'"
 
   runners:
-    default: (selector, handler, $el) ->
+    default: (selector, handler, $el, action='html') ->
       fn = _.bind(handler, @model)
       (args) =>
-        $el.find(selector).html fn(args...)
+        val = fn(args...)
+        console.log selector
+        console.log $el
+        console.log $el.find(selector)
+        $el.find(selector)[action](val)
 
     attr: (selector, handler, $el, m1, m2) ->
       $_el = $el
@@ -125,10 +133,13 @@ class Listener
           $_el.append $new
 
         # Collection reset
-        if typeof args[0].length is 'number'
-          args[0].each (model) =>
-            work [model]
-        # Single
+        if _.isArray(args[0])
+          _.each args[0], (model) => work [model]
+
+        else if args[0].each
+          args[0].each (model) => work [model]
+
+        # Single reset
         else
           work args
 
