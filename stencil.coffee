@@ -75,45 +75,39 @@ class Listener
 
   # Returns a runner for a given directive (ie, matcher/handler pair).
   getSingleRunner: (matcher, handler, $el) ->
-    m = matcher.match(/^\s*([^\s]+)\s*(.*?)\s*$/)
-    throw "Matcher error: '#{matcher}'" unless m
+    match = (str, regex) ->
+      return []  unless regex
+      m = str.match(regex)
+      throw "Matcher error: '#{str}'" unless m
+      m
 
+    m = match matcher, @formats.selector
     action = m[1]
     selector = m[2]
 
-    switch action
-      # List add?
-      when 'add'
-        m = selector.match(/^(.*?)\s*>\s*([^>]+?)$/)
-        throw "#{action} matcher error: '#{selector}'" unless m
-        @runners.add.apply this, [selector, handler, $el, m[1], m[2]]
+    throw "Unknown action: '#{action}'" unless @runners[action]
 
-      # Attribute?
-      when 'attr'
-        m = selector.match(/^(.*?)\s*@([A-Za-z0-9\-\_]+)$/)
-        throw "#{action} matcher error: '#{selector}'" unless m
-        @runners.attr.apply this, [selector, handler, $el, m[1], m[2]]
+    m = match selector, @formats[action]
+    @runners[action].apply this, [selector, handler, $el, m[1], m[2], m[3]]
 
-      when 'html', 'text'
-        @runners.default.apply this, [selector, handler, $el, action]
-
-      when 'remove'
-        m = selector.match(/^(.*?)\s*>\s*([^>]+?)\s*@([A-Za-z0-9\-\_]+)\s*$/)
-        throw "#{action} matcher error: '#{selector}'" unless m
-        @runners.remove.apply this, [selector, handler, $el, m[1], m[2], m[3]]
-
-      else
-        throw "Unknown action: '#{action}'"
+  formats:
+    selector: /^\s*([^\s]+)\s*(.*?)\s*$/
+    add:      /^(.*?)\s*>\s*([^>]+?)$/
+    attr:     /^(.*?)\s*@([A-Za-z0-9\-\_]+)$/
+    remove:   /^(.*?)\s*>\s*([^>]+?)\s*@([A-Za-z0-9\-\_]+)\s*$/
 
   runners:
-    default: (selector, handler, $el, action='html') ->
+    default: (selector, handler, $el, action) ->
       fn = _.bind(handler, @model)
       (args) =>
         val = fn(args...)
-        console.log selector
-        console.log $el
-        console.log $el.find(selector)
         $el.find(selector)[action](val)
+
+    html: (selector, handler, $el) ->
+      @runners.default.apply this, [selector, handler, $el, 'html']
+
+    text: (selector, handler, $el) ->
+      @runners.default.apply this, [selector, handler, $el, 'text']
 
     attr: (selector, handler, $el, m1, m2) ->
       $_el = $el

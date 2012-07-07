@@ -128,56 +128,51 @@ https://github.com/rstacruz/stencil.js
     };
 
     Listener.prototype.getSingleRunner = function(matcher, handler, $el) {
-      var action, m, selector;
-      m = matcher.match(/^\s*([^\s]+)\s*(.*?)\s*$/);
-      if (!m) {
-        throw "Matcher error: '" + matcher + "'";
-      }
+      var action, m, match, selector;
+      match = function(str, regex) {
+        var m;
+        if (!regex) {
+          return [];
+        }
+        m = str.match(regex);
+        if (!m) {
+          throw "Matcher error: '" + str + "'";
+        }
+        return m;
+      };
+      m = match(matcher, this.formats.selector);
       action = m[1];
       selector = m[2];
-      switch (action) {
-        case 'add':
-          m = selector.match(/^(.*?)\s*>\s*([^>]+?)$/);
-          if (!m) {
-            throw "" + action + " matcher error: '" + selector + "'";
-          }
-          return this.runners.add.apply(this, [selector, handler, $el, m[1], m[2]]);
-        case 'attr':
-          m = selector.match(/^(.*?)\s*@([A-Za-z0-9\-\_]+)$/);
-          if (!m) {
-            throw "" + action + " matcher error: '" + selector + "'";
-          }
-          return this.runners.attr.apply(this, [selector, handler, $el, m[1], m[2]]);
-        case 'html':
-        case 'text':
-          return this.runners["default"].apply(this, [selector, handler, $el, action]);
-        case 'remove':
-          m = selector.match(/^(.*?)\s*>\s*([^>]+?)\s*@([A-Za-z0-9\-\_]+)\s*$/);
-          if (!m) {
-            throw "" + action + " matcher error: '" + selector + "'";
-          }
-          return this.runners.remove.apply(this, [selector, handler, $el, m[1], m[2], m[3]]);
-        default:
-          throw "Unknown action: '" + action + "'";
+      if (!this.runners[action]) {
+        throw "Unknown action: '" + action + "'";
       }
+      m = match(selector, this.formats[action]);
+      return this.runners[action].apply(this, [selector, handler, $el, m[1], m[2], m[3]]);
+    };
+
+    Listener.prototype.formats = {
+      selector: /^\s*([^\s]+)\s*(.*?)\s*$/,
+      add: /^(.*?)\s*>\s*([^>]+?)$/,
+      attr: /^(.*?)\s*@([A-Za-z0-9\-\_]+)$/,
+      remove: /^(.*?)\s*>\s*([^>]+?)\s*@([A-Za-z0-9\-\_]+)\s*$/
     };
 
     Listener.prototype.runners = {
       "default": function(selector, handler, $el, action) {
         var fn,
           _this = this;
-        if (action == null) {
-          action = 'html';
-        }
         fn = _.bind(handler, this.model);
         return function(args) {
           var val;
           val = fn.apply(null, args);
-          console.log(selector);
-          console.log($el);
-          console.log($el.find(selector));
           return $el.find(selector)[action](val);
         };
+      },
+      html: function(selector, handler, $el) {
+        return this.runners["default"].apply(this, [selector, handler, $el, 'html']);
+      },
+      text: function(selector, handler, $el) {
+        return this.runners["default"].apply(this, [selector, handler, $el, 'text']);
       },
       attr: function(selector, handler, $el, m1, m2) {
         var $_el, fn,
