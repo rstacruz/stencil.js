@@ -53,11 +53,11 @@ class Listener
     return @runGlob(events)  if events.indexOf('*') > -1
     events = [events]  unless _.isArray(events)
 
-    @runDirectives @getDirectivesFor(events), @$el, args
+    @runDirectives @getDirectivesFor(events), args
 
   # Given a hash of directives, run them against element {$el}. Pass the
   # arguments {args} to the handlers.
-  runDirectives: (directives, $el, args) ->
+  runDirectives: (directives, args, $el=@$el) ->
     _.each directives, (action, selector) =>
       @getRunner(selector, action, $el)(args)
 
@@ -99,7 +99,7 @@ class Listener
       (args) =>
         $new = $tpl.clone()
         $new.attr 'data-random', Math.random() # Workaround!
-        @runDirectives(action, $new, args)
+        @runDirectives action, args, $new
         $_el.append $new
 
     listRemove: (selector, action, $el, m1, m2, attribute) ->
