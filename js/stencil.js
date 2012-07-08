@@ -182,20 +182,20 @@ https://github.com/rstacruz/stencil.js
       text: function(selector, handler, $el) {
         return this.runners["default"].apply(this, [selector, handler, $el, 'text']);
       },
-      attr: function(selector, handler, $el, sub, m2) {
+      attr: function(selector, handler, $el, sub, attribute) {
         var $_el, fn,
           _this = this;
         $_el = $find($el, sub);
         fn = _.bind(handler, this.model);
         return function(args) {
-          return $_el.attr(m2, fn.apply(null, args));
+          return $_el.attr(attribute, fn.apply(null, args));
         };
       },
-      add: function(selector, handler, $el, sub, m2) {
+      add: function(selector, handler, $el, sub, template) {
         var $_el, $tpl,
           _this = this;
         $_el = $find($el, sub);
-        $tpl = $($_el.find(m2)[0]).remove();
+        $tpl = $($_el.find(template)[0]).remove();
         return function(args) {
           var work;
           work = function(_args) {

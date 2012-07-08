@@ -7,29 +7,49 @@ uniqCount = 0
 $find = ($el, sub) ->
   if sub.length then $el.find(sub) else $el
 
-class Listener
+# Stencil object.
+# Doing $('...').stencil returns an instance of this is.
+#
+class Stencil
+  # A hash of { eventName: function } pairs of the functions that are bound to
+  # the model object. The functions are generated (compiled) functions. It's
+  # stored here so later they can be easily unbind()ed.
+  #
+  # handlers: null
+
+  # A hash of the supplied rules. These are flattened, taking comma-separated
+  # event names into consideration. This hash looks like this:
+  #   { 'change': { 'text h1': (function), 'text h2': (function) }, ... }
+  #
+  # events: null
+
   constructor: (@$el, model, rules) ->
     unless rules?
       rules = model; model = null
 
     @model = model
     @events = @_flattenRules rules
-    @memoize @, 'getSingleRunner'
+    @_memoize this, 'getSingleRunner'
 
     @bind()
 
-  memoize: (obj, attr) ->
-    # Hash the element
+  # Makes a function cache results based on the given parameters.
+  # This is used to compile your directives into simple functions.
+  _memoize: (obj, attr) ->
+    # The hasher used for the functions as a key for the cache store.
     hasher = (a, b, $el) ->
       uniq = $el[0].uniq ?= uniqCount++
       [a, b, uniq]
 
-    fn = obj[attr]
-    obj[attr] = _.memoize fn, hasher
+    obj[attr] = _.memoize obj[attr], hasher
 
   bind: ->
+    # If there is no model supplied, or if it doesn't support events, don't
+    # bother binding and just silently move on. This will be the case of
+    # `$('...').stencil(bindings)` (called without a model).
     return unless @model?.on
 
+    # Unbind first just to be sure. (This will do nothing if it hasn't been bound before)
     @unbind()
 
     # Save the handlers so we can unbind them later if need be.
@@ -40,6 +60,7 @@ class Listener
 
     this
 
+  # Unbinds.
   unbind: ->
     return unless @model?.off
 
@@ -61,6 +82,7 @@ class Listener
 
     re
 
+  # Runs a group of events.
   run: (events='*', args...) ->
     return @runGlob(events)  if events.indexOf('*') > -1
     events = [events]  unless _.isArray(events)
@@ -175,5 +197,5 @@ class Listener
 
 # jQuery/Zepto
 $.fn.stencil = (model, bindings) ->
-  new Listener this, model, bindings
+  new Stencil this, model, bindings
 
