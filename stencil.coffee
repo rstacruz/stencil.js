@@ -2,6 +2,8 @@
 https://github.com/rstacruz/stencil.js
 ####
 
+uniqCount = 0
+
 class Listener
   constructor: (@$el, model, rules) ->
     unless rules?
@@ -14,14 +16,13 @@ class Listener
     @bind()
 
   memoize: (obj, attr) ->
-    all = (a,b,$el) ->
-      # Hash the element
-      $el.data('uniq') ? $el.data('uniq', Math.random())
-      uniq = $el.data('uniq')
-      [a,b,uniq]
+    # Hash the element
+    hasher = (a, b, $el) ->
+      uniq = $el[0].uniq ?= uniqCount++
+      [a, b, uniq]
 
     fn = obj[attr]
-    obj[attr] = _.memoize fn, all
+    obj[attr] = _.memoize fn, hasher
 
   bind: ->
     return unless @model?.on
