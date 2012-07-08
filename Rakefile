@@ -16,6 +16,7 @@ desc "Builds."
 task :build do
   need "coffee", "npm install -g coffee-script"
   need "uglifyjs", "npm install -g uglifyjs"
-  system "coffee -p stencil.coffee > stencil.js"
-  system "uglifyjs stencil.js > stencil.min.js"
+  system "mkdir -p js"
+  system "coffee -p stencil.coffee > js/stencil.js"
+  system "uglifyjs js/stencil.js > js/stencil.min.js"
 end

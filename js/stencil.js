@@ -4,8 +4,12 @@ https://github.com/rstacruz/stencil.js
 
 
 (function() {
-  var Listener,
+  var Listener, hashes, hcount,
     __slice = [].slice;
+
+  hashes = {};
+
+  hcount = 0;
 
   Listener = (function() {
 
@@ -22,17 +26,13 @@ https://github.com/rstacruz/stencil.js
     }
 
     Listener.prototype.memoize = function(obj, attr) {
-      var all, fn;
-      all = function(a, b, $el) {
-        var uniq, _ref;
-                if ((_ref = $el.data('uniq')) != null) {
-          _ref;
-
-        } else {
-          $el.data('uniq', Math.random());
-        };
-        uniq = $el.data('uniq');
-        return [a, b, uniq];
+      var fn, hasher;
+      hasher = function(a, b, $el) {
+        var _name, _ref;
+        if ((_ref = hashes[_name = $el[0]]) == null) {
+          hashes[_name] = hcount++;
+        }
+        return [a, b, hashes[$el[0]]];
       };
       fn = obj[attr];
       return obj[attr] = _.memoize(fn, all);
