@@ -4,6 +4,9 @@ https://github.com/rstacruz/stencil.js
 
 uniqCount = 0
 
+$find = ($el, sub) ->
+  if sub.length then $el.find(sub) else $el
+
 class Listener
   constructor: (@$el, model, rules) ->
     unless rules?
@@ -106,7 +109,7 @@ class Listener
       fn = _.bind(handler, @model)
       (args) =>
         val = fn(args...)
-        $el.find(selector)[action](val)
+        $find($el, selector)[action](val)
 
     html: (selector, handler, $el) ->
       @runners.default.apply this, [selector, handler, $el, 'html']
@@ -114,16 +117,15 @@ class Listener
     text: (selector, handler, $el) ->
       @runners.default.apply this, [selector, handler, $el, 'text']
 
-    attr: (selector, handler, $el, m1, m2) ->
-      $_el = $el
-      $_el = $_el.find(m1)  if m1.length
+    attr: (selector, handler, $el, sub, m2) ->
+      $_el = $find($el, sub)
       fn = _.bind(handler, @model)
+
       (args) =>
         $_el.attr m2, fn(args...)
 
-    add: (selector, handler, $el, m1, m2) ->
-      $_el = $el
-      $_el = $_el.find(m1)  if m1.length
+    add: (selector, handler, $el, sub, m2) ->
+      $_el = $find($el, sub)
       $tpl = $($_el.find(m2)[0]).remove()
 
       (args) =>
@@ -145,13 +147,12 @@ class Listener
           work args
 
     remove: (selector, handler, $el, m1, m2, attribute) ->
-      $_el = $el
-      $_el = $_el.find(m1)  if m1.length
+      $_el = $find($el, m1)
       fn = _.bind(handler, @model)
 
       (args) =>
         val = fn(args...)
-        $_el.find(m2).filter("[#{attribute}=\"#{val}\"]").remove()
+        $find($_el, m2).filter("[#{attribute}=\"#{val}\"]").remove()
 
   runGlob: (glob) ->
     events = _.filter _.keys(@events), (event) ->
