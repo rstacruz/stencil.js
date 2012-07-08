@@ -62,10 +62,7 @@ https://github.com/rstacruz/stencil.js
     Stencil.prototype.unbind = function() {
       var _ref,
         _this = this;
-      if (!((_ref = this.model) != null ? _ref.off : void 0)) {
-        return;
-      }
-      if (this.handlers) {
+      if (((_ref = this.model) != null ? _ref.off : void 0) && this.handlers) {
         _.each(this.handlers, function(fn, event) {
           return _this.model.off(event, fn);
         });

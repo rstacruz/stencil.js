@@ -63,9 +63,7 @@ class Stencil
 
   # Unbinds.
   unbind: ->
-    return unless @model?.off
-
-    if @handlers
+    if @model?.off and @handlers
       _.each @handlers, (fn, event) => @model.off event, fn
       @handlers = null
 
