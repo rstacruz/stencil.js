@@ -57,6 +57,11 @@ class PersonView extends Backbone.View
     @stencil.run 'change:*'
 
     # We're done. Yay!
+
+  remove: ->
+    # When it's time to remove the element, you can easily unbind the events
+    # like so:
+    @stencil.unbind()
 ```
 
 Let's try it:
