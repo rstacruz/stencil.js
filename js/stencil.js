@@ -4,12 +4,18 @@ https://github.com/rstacruz/stencil.js
 
 
 (function() {
-  var Listener, hashes, hcount,
+  var $find, Listener, uniqCount,
     __slice = [].slice;
 
-  hashes = {};
+  uniqCount = 0;
 
-  hcount = 0;
+  $find = function($el, sub) {
+    if (sub.length) {
+      return $el.find(sub);
+    } else {
+      return $el;
+    }
+  };
 
   Listener = (function() {
 
@@ -28,14 +34,12 @@ https://github.com/rstacruz/stencil.js
     Listener.prototype.memoize = function(obj, attr) {
       var fn, hasher;
       hasher = function(a, b, $el) {
-        var _name, _ref;
-        if ((_ref = hashes[_name = $el[0]]) == null) {
-          hashes[_name] = hcount++;
-        }
-        return [a, b, hashes[$el[0]]];
+        var uniq, _base, _ref;
+        uniq = (_ref = (_base = $el[0]).uniq) != null ? _ref : _base.uniq = uniqCount++;
+        return [a, b, uniq];
       };
       fn = obj[attr];
-      return obj[attr] = _.memoize(fn, all);
+      return obj[attr] = _.memoize(fn, hasher);
     };
 
     Listener.prototype.bind = function() {
@@ -169,7 +173,7 @@ https://github.com/rstacruz/stencil.js
         return function(args) {
           var val;
           val = fn.apply(null, args);
-          return $el.find(selector)[action](val);
+          return $find($el, selector)[action](val);
         };
       },
       html: function(selector, handler, $el) {
@@ -178,25 +182,19 @@ https://github.com/rstacruz/stencil.js
       text: function(selector, handler, $el) {
         return this.runners["default"].apply(this, [selector, handler, $el, 'text']);
       },
-      attr: function(selector, handler, $el, m1, m2) {
+      attr: function(selector, handler, $el, sub, m2) {
         var $_el, fn,
           _this = this;
-        $_el = $el;
-        if (m1.length) {
-          $_el = $_el.find(m1);
-        }
+        $_el = $find($el, sub);
         fn = _.bind(handler, this.model);
         return function(args) {
           return $_el.attr(m2, fn.apply(null, args));
         };
       },
-      add: function(selector, handler, $el, m1, m2) {
+      add: function(selector, handler, $el, sub, m2) {
         var $_el, $tpl,
           _this = this;
-        $_el = $el;
-        if (m1.length) {
-          $_el = $_el.find(m1);
-        }
+        $_el = $find($el, sub);
         $tpl = $($_el.find(m2)[0]).remove();
         return function(args) {
           var work;
@@ -223,15 +221,12 @@ https://github.com/rstacruz/stencil.js
       remove: function(selector, handler, $el, m1, m2, attribute) {
         var $_el, fn,
           _this = this;
-        $_el = $el;
-        if (m1.length) {
-          $_el = $_el.find(m1);
-        }
+        $_el = $find($el, m1);
         fn = _.bind(handler, this.model);
         return function(args) {
           var val;
           val = fn.apply(null, args);
-          return $_el.find(m2).filter("[" + attribute + "=\"" + val + "\"]").remove();
+          return $find($_el, m2).filter("[" + attribute + "=\"" + val + "\"]").remove();
         };
       }
     };
