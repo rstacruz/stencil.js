@@ -4,6 +4,7 @@ https://github.com/rstacruz/stencil.js
 
 uniqCount = 0
 
+# Helper function for matching a selector in a given element's descedants.
 $find = ($el, sub) ->
   if sub.length then $el.find(sub) else $el
 
@@ -15,13 +16,13 @@ class Stencil
   # the model object. The functions are generated (compiled) functions. It's
   # stored here so later they can be easily unbind()ed.
   #
-  # handlers: null
+  # handlers: {}
 
   # A hash of the supplied rules. These are flattened, taking comma-separated
   # event names into consideration. This hash looks like this:
   #   { 'change': { 'text h1': (function), 'text h2': (function) }, ... }
   #
-  # events: null
+  # events: {}
 
   constructor: (@$el, model, rules) ->
     unless rules?
@@ -47,16 +48,16 @@ class Stencil
     # If there is no model supplied, or if it doesn't support events, don't
     # bother binding and just silently move on. This will be the case of
     # `$('...').stencil(bindings)` (called without a model).
-    return unless @model?.on
+    if @model?.on
 
-    # Unbind first just to be sure. (This will do nothing if it hasn't been bound before)
-    @unbind()
+      # Unbind first just to be sure. (This will do nothing if it hasn't been bound before)
+      @unbind()
 
-    # Save the handlers so we can unbind them later if need be.
-    @handlers = {}
-    _.each @events, (directives, event) =>
-      @handlers[event] = (args...) => @run event, args...
-      @model.on event, @handlers[event]
+      # Save the handlers so we can unbind them later if need be.
+      @handlers = {}
+      _.each @events, (directives, event) =>
+        @handlers[event] = (args...) => @run event, args...
+        @model.on event, @handlers[event]
 
     this
 

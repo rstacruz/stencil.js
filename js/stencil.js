@@ -45,7 +45,7 @@ https://github.com/rstacruz/stencil.js
       var _ref,
         _this = this;
       if (!((_ref = this.model) != null ? _ref.on : void 0)) {
-        return;
+        return this;
       }
       this.unbind();
       this.handlers = {};
