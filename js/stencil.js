@@ -44,19 +44,18 @@ https://github.com/rstacruz/stencil.js
     Stencil.prototype.bind = function() {
       var _ref,
         _this = this;
-      if (!((_ref = this.model) != null ? _ref.on : void 0)) {
-        return this;
+      if ((_ref = this.model) != null ? _ref.on : void 0) {
+        this.unbind();
+        this.handlers = {};
+        _.each(this.events, function(directives, event) {
+          _this.handlers[event] = function() {
+            var args;
+            args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+            return _this.run.apply(_this, [event].concat(__slice.call(args)));
+          };
+          return _this.model.on(event, _this.handlers[event]);
+        });
       }
-      this.unbind();
-      this.handlers = {};
-      _.each(this.events, function(directives, event) {
-        _this.handlers[event] = function() {
-          var args;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return _this.run.apply(_this, [event].concat(__slice.call(args)));
-        };
-        return _this.model.on(event, _this.handlers[event]);
-      });
       return this;
     };
 
