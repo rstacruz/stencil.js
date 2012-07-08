@@ -117,16 +117,16 @@ class Listener
     text: (selector, handler, $el) ->
       @runners.default.apply this, [selector, handler, $el, 'text']
 
-    attr: (selector, handler, $el, sub, m2) ->
+    attr: (selector, handler, $el, sub, attribute) ->
       $_el = $find($el, sub)
       fn = _.bind(handler, @model)
 
       (args) =>
-        $_el.attr m2, fn(args...)
+        $_el.attr attribute, fn(args...)
 
-    add: (selector, handler, $el, sub, m2) ->
+    add: (selector, handler, $el, sub, template) ->
       $_el = $find($el, sub)
-      $tpl = $($_el.find(m2)[0]).remove()
+      $tpl = $($_el.find(template)[0]).remove()
 
       (args) =>
         work = (_args) =>
@@ -135,14 +135,17 @@ class Listener
           runner(_args)
           $_el.append $new
 
-        # Collection reset
+        # Handle Backbone collection 'reset' events, or arrays.  If the 'add'
+        # action was invoked with a collection/array (such as `.run('reset',
+        # [a,b,c])`), iterate over them and add them all.
         if _.isArray(args[0])
           _.each args[0], (model) => work [model]
 
         else if args[0].each
           args[0].each (model) => work [model]
 
-        # Single reset
+        # Else, assume it's a single item (like in Backbone 'add' events).
+        # Handles the case of `.run('add', person)`.
         else
           work args
 
