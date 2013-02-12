@@ -203,3 +203,6 @@ class Stencil
 $.fn.stencil = (args...) ->
   new Stencil this, args...
 
+# Export
+$.stencil = Stencil
+$.stencil.version = "1.1.0"

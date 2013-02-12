@@ -19,14 +19,11 @@ https://github.com/rstacruz/stencil.js
 
   Stencil = (function() {
 
-    function Stencil($el, model, rules) {
+    function Stencil($el, model, rules, context) {
       this.$el = $el;
-      if (rules == null) {
-        rules = model;
-        model = null;
-      }
       this.model = model;
       this.events = this._flattenRules(rules);
+      this.context = context != null ? context : this.model;
       this._memoize(this, 'getSingleRunner');
       this.bind();
     }
@@ -77,7 +74,7 @@ https://github.com/rstacruz/stencil.js
       re = {};
       _.each(rules, function(directives, eventList) {
         var events;
-        events = eventList.split(/, */);
+        events = eventList.replace(/,/g, ' ').split(/\ +/);
         return _.each(events, function(event) {
           var _ref;
           if ((_ref = re[event]) == null) {
@@ -164,7 +161,7 @@ https://github.com/rstacruz/stencil.js
       "default": function(selector, handler, $el, action) {
         var fn,
           _this = this;
-        fn = _.bind(handler, this.model);
+        fn = _.bind(handler, this.context);
         return function(args) {
           var val;
           val = fn.apply(null, args);
@@ -177,11 +174,17 @@ https://github.com/rstacruz/stencil.js
       text: function(selector, handler, $el) {
         return this.runners["default"].apply(this, [selector, handler, $el, 'text']);
       },
+      val: function(selector, handler, $el) {
+        return this.runners["default"].apply(this, [selector, handler, $el, 'val']);
+      },
+      value: function(selector, handler, $el) {
+        return this.runners["default"].apply(this, [selector, handler, $el, 'val']);
+      },
       attr: function(selector, handler, $el, sub, attribute) {
         var $_el, fn,
           _this = this;
         $_el = $find($el, sub);
-        fn = _.bind(handler, this.model);
+        fn = _.bind(handler, this.context);
         return function(args) {
           return $_el.attr(attribute, fn.apply(null, args));
         };
@@ -217,7 +220,7 @@ https://github.com/rstacruz/stencil.js
         var $_el, fn,
           _this = this;
         $_el = $find($el, m1);
-        fn = _.bind(handler, this.model);
+        fn = _.bind(handler, this.context);
         return function(args) {
           var val;
           val = fn.apply(null, args);
@@ -253,8 +256,18 @@ https://github.com/rstacruz/stencil.js
 
   })();
 
-  $.fn.stencil = function(model, bindings) {
-    return new Stencil(this, model, bindings);
+  $.fn.stencil = function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return (function(func, args, ctor) {
+      ctor.prototype = func.prototype;
+      var child = new ctor, result = func.apply(child, args), t = typeof result;
+      return t == "object" || t == "function" ? result || child : child;
+    })(Stencil, [this].concat(__slice.call(args)), function(){});
   };
+
+  $.stencil = Stencil;
+
+  $.stencil.version = "1.1.0";
 
 }).call(this);

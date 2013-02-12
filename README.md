@@ -67,10 +67,10 @@ class PersonView extends Backbone.View
 Let's try it:
 
 ``` coffee
-person = new Person first_name: "Jack", last_name: "Harkness"
+person = new Person(first_name: "Jack", last_name: "Harkness")
 
 # Just making the view will populate the element (by running 'change:*').
-view = new PersonView model: person, el: $(".person")
+view = new PersonView(model: person, el: $(".person"))
 
 # Now change something in the model. Backbone will trigger the
 # 'change:last_name' event...
