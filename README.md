@@ -228,7 +228,7 @@ that's what matches the thing to be deleted.
 class AddressBook extends Backbone.View
   bindings:
     # We'll make a binding to a Backbone collection's `add` and `reset` events.
-    'add, reset':
+    'add reset':
 
       # To add, make a directive with a matcher `add PARENT > CHILD`.
       # Whenever the above events (add/reset) are triggered, this directive will
