@@ -9,6 +9,8 @@ describe 'Stencil', ->
       <div id='post'>
         <h2>x</h2>
         <span class='email'></span>
+        <textarea></textarea>
+        <input type='text'>
       </div>
       '''
 
@@ -40,6 +42,24 @@ describe 'Stencil', ->
 
       expect(@view.$el).toContainHtml '<h2>Jason</h2>'
       expect(@view.$el).not.toContainHtml '<span class="email">jason@hi.com</span>'
+
+  describe 'Value runner', ->
+    beforeEach ->
+      @view.person = new Person name: 'Jane'
+
+      @stencil = @view.$el.stencil @view.person,
+        'change:name':
+          'val textarea': -> @person.get 'name'
+          'val input[type="text"]': -> @person.get 'name'
+      , @view
+
+    it 'for textarea', ->
+      @stencil.run 'change:name'
+      expect(@view.$el.find('textarea').val()).toEqual "Jane"
+
+    it 'for text input', ->
+      @stencil.run 'change:name'
+      expect(@view.$el.find('input').val()).toEqual "Jane"
 
   describe 'Multi events', ->
     beforeEach ->

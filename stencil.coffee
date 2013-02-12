@@ -136,6 +136,13 @@ class Stencil
     text: (selector, handler, $el) ->
       @runners.default.apply this, [selector, handler, $el, 'text']
 
+    val: (selector, handler, $el) ->
+      @runners.default.apply this, [selector, handler, $el, 'val']
+
+    # It should be 'val', but we'll allow 'value' too.
+    value: (selector, handler, $el) ->
+      @runners.default.apply this, [selector, handler, $el, 'val']
+
     attr: (selector, handler, $el, sub, attribute) ->
       $_el = $find($el, sub)
       fn = _.bind(handler, @context)

@@ -169,6 +169,12 @@ or text:
 'text h2': -> @model.get('name')       # <h2>Hello</h2>
 ```
 
+or values:
+
+``` coffee
+'val textarea': -> @model.get('name')  # <textarea>Hello</textarea>
+```
+
 Attributes are okay:
 
 ``` coffee
