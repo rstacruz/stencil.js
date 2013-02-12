@@ -25,9 +25,6 @@ class Stencil
   # events: {}
 
   constructor: (@$el, model, rules) ->
-    unless rules?
-      rules = model; model = null
-
     @model = model
     @events = @_flattenRules rules
     @_memoize this, 'getSingleRunner'

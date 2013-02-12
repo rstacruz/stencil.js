@@ -83,14 +83,14 @@ person.set last_name: "Boe"
 
 ``` coffee
 # Let's build a simple stencil...
-stencil = $("#foo").stencil
+stencil = $("#foo").stencil null,
   'edit':
     'html h2 .first':     (p) -> p.first_name
     'html .avatar@title': (p) -> p.first_name
     'html h2 .last':      (p) -> p.last_name
 
 # Then let's say your data looks like:
-person = (first_name: "Rose", last_name: "Tyler")
+person = {first_name: "Rose", last_name: "Tyler"}
 
 # Now you can run it!
 stencil.run 'edit', person
