@@ -71,7 +71,8 @@ class Stencil
   _flattenRules: (rules) ->
     re = {}
     _.each rules, (directives, eventList) =>
-      events = eventList.split(/, */)
+      # Account for the old syntax of comma-separated event names
+      events = eventList.replace(/,/g, ' ').split(/\ +/)
       _.each events, (event) =>
         re[event] ?= {}
         _.extend re[event], directives

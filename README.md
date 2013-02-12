@@ -201,11 +201,11 @@ There's also the `remove` action. See
 
 ## Multiple events
 
-You can comma-separate the events.
+You can space-separate the events in bindings.
 
 ``` coffee
 bindings =
-  'change:first_name, change:last_name':
+  'change:first_name change:last_name':
     'html h2': -> @model.get('last_name') + ", " + @model.get('first_name')
 
 stencil = $(@el).stencil @model, bindings, this

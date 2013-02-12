@@ -33,13 +33,29 @@ describe 'Stencil', ->
 
       @stencil = @view.$el.stencil @view.person,
         'change:name':
-          'text h2': -> console.log this; @person.get 'name'
+          'text h2': -> @person.get 'name'
       , @view
 
       @stencil.run 'change:name'
 
       expect(@view.$el).toContainHtml '<h2>Jason</h2>'
       expect(@view.$el).not.toContainHtml '<span class="email">jason@hi.com</span>'
+
+  describe 'Multi events', ->
+    beforeEach ->
+      @view.person = new Person firstname: 'Jason', lastname: 'Bourne'
+
+      @stencil = @view.$el.stencil @view.person,
+        'change:firstname change:lastname':
+          'text h2': -> @get('firstname') + " " + @get('lastname')
+
+    it 'should work (1)', ->
+      @stencil.run 'change:firstname'
+      expect(@view.$el).toContainHtml '<h2>Jason Bourne</h2>'
+
+    it 'should work (2)', ->
+      @stencil.run 'change:lastname'
+      expect(@view.$el).toContainHtml '<h2>Jason Bourne</h2>'
 
   describe 'Bindngs', ->
     beforeEach ->
