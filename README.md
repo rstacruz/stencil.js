@@ -39,18 +39,18 @@ class PersonView extends Backbone.View
   # change:last_name), along with directives on how to respond to those events.
   bindings:
     'change:first_name':
-      'html h2 .first':     -> @get('first_name')
-      'html .avatar@title': -> @get('first_name')
+      'html h2 .first':     -> @model.get('first_name')
+      'html .avatar@title': -> @model.get('first_name')
 
     'change:last_name':
-      'html h2 .last': -> @get('first_name')
+      'html h2 .last': -> @model.get('first_name')
 
   initialize: (@model) ->
     # Let's render the element! First, let's bring in the static HTML template:
     @$el.html template
 
     # Then let's make a stencil that binds your bindings to your model:
-    @stencil = @$el.stencil(@model, @bindings)
+    @stencil = @$el.stencil(@model, @bindings, this)
 
     # Now let's trigger all the `change` bindings, which will effectively
     # populate the element:
@@ -81,6 +81,9 @@ person.set last_name: "Boe"
 
 ## Non-Backbone usage
 
+Stencil.js is made with Backbone.js in mind, but it can also be used without 
+Backbone.
+
 ``` coffee
 # Let's build a simple stencil...
 stencil = $("#foo").stencil null,
@@ -98,31 +101,43 @@ stencil.run 'edit', person
 
 ## Getting started
 
-To start, create a stencil object that links your model events to
+To start, create a Stencil object that links your model events to
 directives.
 
 ``` coffee
 bindings =
   'change:name':
-    'html h2': -> @get('name')
-    'attr a.permalink@href': -> @url()
+    'html h2': -> @model.get('name')
+    'attr a.permalink@href': -> @model.url()
 
   'change:content':
-    'html .content': -> @get('content')
+    'html .content': -> @model.get('content')
 
 # Backbone:
-stencil = $(@el).stencil @model, bindings
+stencil = $(@el).stencil @model,  bindings,  this
+#                        ^model   ^bindings  ^context
 
 # Not Backbone:
-stencil = $(@el).stencil bindings
+stencil = $(@el).stencil null,   bindings,  null
+#                        ^model  ^bindings  ^context
 ```
 
-The `model` parameter is (1) where events will be bound to, and (2) the `this`
-in the functions that you'll define in your bindings. It is optional.
+The `.stencil()` function takes 3 parameters:
 
-This makes it so that everytime the `change:name` happens on the model, the h2
-text and a.permalink's href attribute is updated with `model.get('name')` and
-`model.url()` respectively.
+ - `model`    - This is the object that Stencil will listen for events from.
+ - `bindings` - This is the list of bindings that Stencil will react to.
+ - `context`  - The object where the `this` in the functions in bindings will be 
+ bound to. In the example above, when `@model.get('name')` is called, the `@` 
+ refers to the object passed as the context (`this`).
+
+The `model` is optional - when it is not given, no events are being listened 
+for. (You'll have to trigger `.run()` manually)
+
+The `context` is optional as well. It defaults to the `model`.
+
+This example above makes it so that every time the `change:name` event happens 
+on the model, the h2 text and a.permalink's href attribute is updated with 
+`model.get('name')` and `model.url()` respectively.
 
 Stencil automatically binds to the given model as long as it responds to `.on`
 or `.off`. Great for Backbone models or collections!
@@ -145,25 +160,25 @@ stencil.run('change:*')
 You can have a directive to edit HTML from an element:
 
 ``` coffee
-'html h2': -> @get('name')       # <h2>Hello</h2>
+'html h2': -> @model.get('name')       # <h2>Hello</h2>
 ```
 
 or text:
 
 ``` coffee
-'text h2': -> @get('name')       # <h2>Hello</h2>
+'text h2': -> @model.get('name')       # <h2>Hello</h2>
 ```
 
 Attributes are okay:
 
 ``` coffee
-'attr a@href': -> @url()         # <a href='/url/'></a>
+'attr a@href': -> @model.url()         # <a href='/url/'></a>
 ```
 
 Self attributes are cool too (it works on the top level element):
 
 ``` coffee
-'attr @data-id': -> @id          # <div id='id-here'>
+'attr @data-id': -> @model.id          # <div id='id-here'>
 ```
 
 To work with arrays/collections, use the `add` action to add items. Great for
@@ -189,9 +204,11 @@ There's also the `remove` action. See
 You can comma-separate the events.
 
 ``` coffee
-stencil = $(@el).stencil @model,
+bindings =
   'change:first_name, change:last_name':
-    'html h2': -> @get('last_name') + ", " + @get('first_name')
+    'html h2': -> @model.get('last_name') + ", " + @model.get('first_name')
+
+stencil = $(@el).stencil @model, bindings, this
 ```
 
 ## Working with arrays and collections

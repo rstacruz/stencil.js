@@ -24,9 +24,9 @@ class Stencil
   #
   # events: {}
 
-  constructor: (@$el, model, rules) ->
-    @model = model
+  constructor: (@$el, @model, rules, context) ->
     @events = @_flattenRules rules
+    @context = context ? @model
     @_memoize this, 'getSingleRunner'
 
     @bind()
@@ -124,7 +124,7 @@ class Stencil
 
   runners:
     default: (selector, handler, $el, action) ->
-      fn = _.bind(handler, @model)
+      fn = _.bind(handler, @context)
       (args) =>
         val = fn(args...)
         $find($el, selector)[action](val)
@@ -137,7 +137,7 @@ class Stencil
 
     attr: (selector, handler, $el, sub, attribute) ->
       $_el = $find($el, sub)
-      fn = _.bind(handler, @model)
+      fn = _.bind(handler, @context)
 
       (args) =>
         $_el.attr attribute, fn(args...)
@@ -169,7 +169,7 @@ class Stencil
 
     remove: (selector, handler, $el, m1, m2, attribute) ->
       $_el = $find($el, m1)
-      fn = _.bind(handler, @model)
+      fn = _.bind(handler, @context)
 
       (args) =>
         val = fn(args...)
@@ -192,6 +192,6 @@ class Stencil
     directives
 
 # jQuery/Zepto
-$.fn.stencil = (model, bindings) ->
-  new Stencil this, model, bindings
+$.fn.stencil = (args...) ->
+  new Stencil this, args...
 

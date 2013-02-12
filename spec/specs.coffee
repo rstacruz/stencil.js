@@ -27,6 +27,20 @@ describe 'Stencil', ->
     @stencil.unbind()
     @view.remove()
 
+  describe 'Contexts', ->
+    it 'should work', ->
+      @view.person = new Person name: 'Jason', email: 'jason@hi.com'
+
+      @stencil = @view.$el.stencil @view.person,
+        'change:name':
+          'text h2': -> console.log this; @person.get 'name'
+      , @view
+
+      @stencil.run 'change:name'
+
+      expect(@view.$el).toContainHtml '<h2>Jason</h2>'
+      expect(@view.$el).not.toContainHtml '<span class="email">jason@hi.com</span>'
+
   describe 'Bindngs', ->
     beforeEach ->
       @person = new Person name: 'Jason', email: 'jason@hi.com'
